@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.dukaanpe</groupId>
+    <artifactId>dukaanpe-platform</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <name>DukaanPe Platform</name>
+
+    <modules>
+        <module>dukaanpe-discovery-server</module>
+        <module>dukaanpe-api-gateway</module>
+        <module>dukaanpe-auth-service</module>
+        <module>dukaanpe-store-service</module>
+        <module>dukaanpe-product-inventory-service</module>
+        <module>dukaanpe-billing-pos-service</module>
+        <module>dukaanpe-udhar-khata-service</module>
+        <module>dukaanpe-supplier-purchase-service</module>
+        <module>dukaanpe-payment-service</module>
+        <module>dukaanpe-customer-loyalty-service</module>
+        <module>dukaanpe-gst-tax-service</module>
+        <module>dukaanpe-analytics-service</module>
+        <module>dukaanpe-notification-service</module>
+        <module>dukaanpe-language-service</module>
+        <module>dukaanpe-sync-offline-service</module>
+    </modules>
+</project>
+

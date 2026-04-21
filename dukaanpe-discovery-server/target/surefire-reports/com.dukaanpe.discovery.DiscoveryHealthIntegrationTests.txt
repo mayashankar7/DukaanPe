@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.dukaanpe.discovery.DiscoveryHealthIntegrationTests
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.11 s -- in com.dukaanpe.discovery.DiscoveryHealthIntegrationTests
