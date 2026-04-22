@@ -1,0 +1,3 @@
+com\dukaanpe\gateway\ApiGatewayApplicationTests.class
+com\dukaanpe\gateway\RateLimitingFilterTests.class
+com\dukaanpe\gateway\GatewayHealthIntegrationTests.class
