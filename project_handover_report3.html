@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DukaanPe Platform - Deep Handover Report</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1b2430;
+      --muted: #5b6675;
+      --ok: #15803d;
+      --partial: #b45309;
+      --stub: #475569;
+      --broken: #b91c1c;
+      --missing: #7c2d12;
+      --critical: #b91c1c;
+      --high: #ea580c;
+      --medium: #ca8a04;
+      --low: #334155;
+      --border: #d8dee9;
+      --link: #1d4ed8;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Segoe UI, Arial, sans-serif; background: var(--bg); color: var(--text); }
+    a { color: var(--link); text-decoration: none; }
+    .layout { display: grid; grid-template-columns: 320px 1fr; gap: 16px; max-width: 1800px; margin: 0 auto; padding: 16px; }
+    .toc { position: sticky; top: 12px; align-self: start; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; max-height: calc(100vh - 24px); overflow: auto; }
+    .toc h2 { margin: 0 0 8px 0; font-size: 16px; }
+    .toc ul { list-style: none; padding-left: 0; margin: 0; }
+    .toc li { margin: 6px 0; font-size: 13px; }
+    .main { display: grid; gap: 12px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    h1, h2, h3, h4 { margin: 0 0 8px 0; }
+    h1 { font-size: 26px; }
+    h2 { font-size: 19px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+    h3 { font-size: 16px; }
+    p, li { font-size: 13px; line-height: 1.45; }
+    .small { font-size: 12px; color: var(--muted); }
+    .grid { display: grid; gap: 10px; }
+    .grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .kpi { border: 1px solid var(--border); border-radius: 8px; padding: 8px; background: #fbfcff; }
+    .kpi .label { font-size: 12px; color: var(--muted); }
+    .kpi .value { font-size: 20px; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border: 1px solid var(--border); padding: 6px; vertical-align: top; text-align: left; }
+    th { background: #f0f4fa; }
+    .badge { display: inline-block; padding: 2px 7px; border-radius: 20px; font-size: 11px; font-weight: 600; color: #fff; }
+    .implemented { background: var(--ok); }
+    .partial { background: var(--partial); }
+    .stub { background: var(--stub); }
+    .broken { background: var(--broken); }
+    .missing { background: var(--missing); }
+    .sev-critical { color: #fff; background: var(--critical); }
+    .sev-high { color: #fff; background: var(--high); }
+    .sev-medium { color: #111; background: #fde68a; }
+    .sev-low { color: #fff; background: var(--low); }
+    .details { border: 1px solid var(--border); border-radius: 8px; margin: 8px 0; overflow: hidden; }
+    .details summary { cursor: pointer; background: #f8fafc; padding: 8px; font-weight: 600; font-size: 13px; }
+    .details .content { padding: 10px; }
+    .endpoint-pre { white-space: pre-wrap; font-family: Consolas, monospace; font-size: 12px; background: #0f172a; color: #e5edf8; padding: 10px; border-radius: 8px; }
+    .search-box { width: 100%; max-width: 520px; padding: 7px; border-radius: 6px; border: 1px solid var(--border); }
+    .mono { font-family: Consolas, monospace; }
+    @media print { .toc { display: none; } .layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="toc">
+    <h2>Table of Contents</h2>
+    <ul>
+      <li><a href="#exec">1. Executive Summary</a></li>
+      <li><a href="#scan">2. Repository Scan Summary</a></li>
+      <li><a href="#inventory">3. Service Inventory</a></li>
+      <li><a href="#arch">4. High-Level Architecture Diagram</a></li>
+      <li><a href="#flows">5. Major Project Flow Diagrams</a></li>
+      <li><a href="#matrix">6. Dependency Matrix</a></li>
+      <li><a href="#endpoints">7. Endpoint Catalog</a></li>
+      <li><a href="#postman">8. Postman Testing Guide</a></li>
+      <li><a href="#ui-tests">9. UI Manual Test Cases</a></li>
+      <li><a href="#dev-style">10. How the System Is Developed</a></li>
+      <li><a href="#s2s">11. Service-to-Service Dependencies</a></li>
+      <li><a href="#gaps">12. Deep Incomplete / Missing Analysis</a></li>
+      <li><a href="#intern">13. Intern Action Plan</a></li>
+      <li><a href="#risk">14. Risks / Assumptions / Unknowns</a></li>
+      <li><a href="#evidence">15. Evidence Appendix</a></li>
+    </ul>
+  </aside>
+
+  <main class="main">
+    <section class="card" id="exec">
+      <h1>DukaanPe Platform - Deep Code-First Handover Report</h1>
+      <p class="small">Scan date: 2026-04-24 | Scan mode: Code-first across backend services, gateway, discovery server, frontend routes/components, config and tests.</p>
+      <div class="grid cols-4">
+        <div class="kpi"><div class="label">Total services found</div><div class="value">15</div></div>
+        <div class="kpi"><div class="label">Total endpoints found</div><div class="value">159</div></div>
+        <div class="kpi"><div class="label">UI pages/screens found</div><div class="value">17</div></div>
+        <div class="kpi"><div class="label">UI test cases generated</div><div class="value">24</div></div>
+      </div>
+      <p><strong>Overall maturity:</strong> roughly <span class="badge partial">Partial (about 50-60%)</span>. CRUD-heavy service APIs exist and are largely wired through gateway and frontend. Major gaps are around uniform security, production-hardening, migration discipline, and completeness of cross-service consistency.</p>
+      <h3>Top 5 risks</h3>
+      <ul>
+        <li>Only `dukaanpe-auth-service` has explicit Spring Security filter chain; other services expose endpoints without equivalent auth guard from code (`dukaanpe-auth-service/src/main/java/com/dukaanpe/auth/config/SecurityConfig.java:27-37`, no other `*Security*.java` files found).</li>
+        <li>Many services still rely on `ddl-auto: update` in default/dev profile which can drift schema and hide migration gaps (`*/src/main/resources/application.yml`, e.g. `dukaanpe-store-service/.../application.yml:19-22`).</li>
+        <li>Cross-service hooks use direct `RestTemplate` calls with catch-and-log fallback (resilient but can silently drop integration effects) (`dukaanpe-billing-pos-service/.../BillingServiceImpl.java:360-365`, `dukaanpe-supplier-purchase-service/.../GrnServiceImpl.java:152-157`).</li>
+        <li>Gateway has simple in-memory rate limiter by IP only, no distributed/shared state (`dukaanpe-api-gateway/src/main/java/com/dukaanpe/gateway/filter/RateLimitingFilter.java:18-43`).</li>
+        <li>Flyway baseline scripts are placeholders; initial table creation is still JPA-managed (`dukaanpe-auth-service/src/main/resources/db/migration/V1__baseline.sql:1-2`, same pattern across services).</li>
+      </ul>
+      <h3>Top 5 missing/incomplete areas</h3>
+      <ul>
+        <li>Uniform authorization enforcement across all microservices (Critical).</li>
+        <li>Real migration-first DB lifecycle instead of JPA auto schema updates (High).</li>
+        <li>Retry/backoff + dead-letter style handling for service-to-service hooks (High).</li>
+        <li>Consistent API contract governance (OpenAPI annotations not confirmed in controllers) (Medium).</li>
+        <li>Feature parity between frontend interactions and deeper backend capabilities (many backend endpoints have no UI path yet) (Medium).</li>
+      </ul>
+      <h3>Intern onboarding priority</h3>
+      <ol>
+        <li>Start with gateway + auth + one vertical feature (`billing` + `product` + `udhar`).</li>
+        <li>Validate end-to-end locally via gateway (`/api/...`) before direct service testing.</li>
+        <li>Pick high-confidence tasks first: migration hardening, auth consistency, test additions around existing controllers.</li>
+      </ol>
+    </section>
+
+    <section class="card" id="scan">
+      <h2>2) Repository Scan Summary</h2>
+      <h3>Top-level detected areas</h3>
+      <ul>
+        <li>Backend microservices: `dukaanpe-*-service` folders (13 business services + discovery + gateway).</li>
+        <li>Frontend app: `dukaanpe-frontend` (Angular).</li>
+        <li>Infra: `docker-compose.yml`, `observability/` (Prometheus, Alertmanager, OTel collector config).</li>
+        <li>Docs/support: `docs/`, multiple handover/status HTML/JSON files (used as secondary context only).</li>
+        <li>Tests: backend integration tests in each service (`src/test/java`), frontend Playwright in `dukaanpe-frontend/e2e`.</li>
+      </ul>
+      <h3>Key code-first observations</h3>
+      <ul>
+        <li>Parent Maven module aggregator includes 15 backend modules (`pom.xml:14-30`).</li>
+        <li>Gateway routes all service API prefixes (`dukaanpe-api-gateway/src/main/resources/application.yml:9-74`).</li>
+        <li>Frontend default config uses gateway URL and can optionally call service base URLs directly (`dukaanpe-frontend/src/environments/environment.ts:3-20`).</li>
+      </ul>
+    </section>
+
+    <section class="card" id="inventory">
+      <h2>3) Service Inventory</h2>
+      <table>
+        <thead><tr><th>Service</th><th>Path</th><th>Purpose from code</th><th>Runtime</th><th>Entry point</th><th>Route files</th><th>Storage</th><th>Comm style</th><th>Status</th><th>Evidence</th></tr></thead>
+        <tbody>
+          <tr><td>api-gateway</td><td>`dukaanpe-api-gateway`</td><td>Routes `/api/*` to microservices, adds global logging/rate limiting/CORS</td><td>Spring Cloud Gateway</td><td>`ApiGatewayApplication.java`</td><td>Gateway route config in `application.yml`</td><td>No app DB</td><td>REST proxy</td><td><span class="badge implemented">Implemented</span></td><td>`dukaanpe-api-gateway/src/main/resources/application.yml:9-74`, `.../filter/RateLimitingFilter.java:15-47`</td></tr>
+          <tr><td>discovery-server</td><td>`dukaanpe-discovery-server`</td><td>Eureka service registry</td><td>Spring Boot + Eureka</td><td>`DiscoveryServerApplication.java`</td><td>None (no business controllers)</td><td>No app DB</td><td>Registry</td><td><span class="badge implemented">Implemented</span></td><td>`dukaanpe-discovery-server/src/main/resources/application.yml:8-12`</td></tr>
+          <tr><td>auth-service</td><td>`dukaanpe-auth-service`</td><td>OTP auth, JWT, profile, sessions/devices, user role management</td><td>Spring Boot</td><td>`AuthServiceApplication.java`</td><td>`AuthController.java`</td><td>H2/Postgres + JPA</td><td>REST</td><td><span class="badge implemented">Implemented</span></td><td>`dukaanpe-auth-service/src/main/java/com/dukaanpe/auth/controller/AuthController.java:40-157`</td></tr>
+          <tr><td>store-service</td><td>`dukaanpe-store-service`</td><td>Store CRUD, staff, timings, licenses/subscription</td><td>Spring Boot</td><td>`StoreServiceApplication.java`</td><td>`StoreController.java`</td><td>H2/Postgres + JPA</td><td>REST</td><td><span class="badge implemented">Implemented</span></td><td>`dukaanpe-store-service/src/main/java/com/dukaanpe/store/controller/StoreController.java:39-137`</td></tr>
+          <tr><td>product-inventory-service</td><td>`dukaanpe-product-inventory-service`</td><td>Products/categories + stock/expiry/adjustments</td><td>Spring Boot</td><td>`ProductInventoryServiceApplication.java`</td><td>`ProductController.java`, `InventoryController.java`</td><td>H2/Postgres + JPA</td><td>REST</td><td><span class="badge implemented">Implemented</span></td><td>`.../ProductController.java:39-124`, `.../InventoryController.java:36-95`</td></tr>
+          <tr><td>billing-pos-service</td><td>`dukaanpe-billing-pos-service`</td><td>POS bill calc/create/list/search, bill cancel, summary; hooks udhar/supplier</td><td>Spring Boot</td><td>`BillingPosServiceApplication.java`</td><td>`BillingController.java`, `PosController.java`</td><td>H2/Postgres + JPA</td><td>REST + HTTP hook</td><td><span class="badge partial">Partial</span></td><td>`.../BillingServiceImpl.java:341-386`</td></tr>
+          <tr><td>udhar-khata-service</td><td>`dukaanpe-udhar-khata-service`</td><td>Credit ledger, reminders, settlements, customer khata</td><td>Spring Boot</td><td>`UdharKhataServiceApplication.java`</td><td>`UdharKhataController.java`</td><td>H2/Postgres + JPA</td><td>REST</td><td><span class="badge implemented">Implemented</span></td><td>`.../UdharKhataController.java:52-218`</td></tr>
+          <tr><td>supplier-purchase-service</td><td>`dukaanpe-supplier-purchase-service`</td><td>Suppliers, PO, GRN, inventory-driven auto-suggest</td><td>Spring Boot</td><td>`SupplierPurchaseServiceApplication.java`</td><td>`SupplierController.java`, `PurchaseOrderController.java`, `GrnController.java`</td><td>H2/Postgres + JPA</td><td>REST + HTTP hook</td><td><span class="badge partial">Partial</span></td><td>`.../PurchaseOrderServiceImpl.java:130-187`, `.../GrnServiceImpl.java:131-157`</td></tr>
+          <tr><td>payment-service</td><td>`dukaanpe-payment-service`</td><td>Payment transaction lifecycle + reconciliation + UPI + cash register</td><td>Spring Boot</td><td>`PaymentServiceApplication.java`</td><td>`PaymentController.java`, `PaymentOperationsController.java`</td><td>H2/Postgres + JPA</td><td>REST</td><td><span class="badge implemented">Implemented</span></td><td>`.../PaymentController.java:40-97`, `.../PaymentOperationsController.java:39-108`</td></tr>
+          <tr><td>customer-loyalty-service</td><td>`dukaanpe-customer-loyalty-service`</td><td>Customers, loyalty points, settings, campaigns, eligible preview</td><td>Spring Boot</td><td>`CustomerLoyaltyServiceApplication.java`</td><td>`CustomerController.java`, `LoyaltyController.java`</td><td>H2/Postgres + JPA</td><td>REST</td><td><span class="badge implemented">Implemented</span></td><td>`.../CustomerController.java:44-141`, `.../LoyaltyController.java:49-157`</td></tr>
+          <tr><td>gst-tax-service</td><td>`dukaanpe-gst-tax-service`</td><td>HSN CRUD, GST invoices/returns, tax summary</td><td>Spring Boot</td><td>`GstTaxServiceApplication.java`</td><td>`HsnController.java`, `GstInvoiceController.java`, `GstReturnController.java`, `TaxSummaryController.java`</td><td>H2/Postgres + JPA</td><td>REST</td><td><span class="badge implemented">Implemented</span></td><td>`dukaanpe-gst-tax-service/src/main/java/com/dukaanpe/gsttax/controller/*.java`</td></tr>
+          <tr><td>analytics-service</td><td>`dukaanpe-analytics-service`</td><td>Seed + dashboard/sales/product insights</td><td>Spring Boot</td><td>`AnalyticsServiceApplication.java`</td><td>`AnalyticsController.java`</td><td>H2/Postgres + JPA</td><td>REST</td><td><span class="badge partial">Partial</span></td><td>`.../AnalyticsController.java:41-74`</td></tr>
+          <tr><td>notification-service</td><td>`dukaanpe-notification-service`</td><td>Queueing/send/callback with in-memory retry scheduler</td><td>Spring Boot</td><td>`NotificationServiceApplication.java`</td><td>`NotificationController.java`</td><td>H2 file/Postgres + JPA</td><td>REST + scheduled retry</td><td><span class="badge partial">Partial</span></td><td>`.../InMemoryNotificationService.java:86-135`</td></tr>
+          <tr><td>language-service</td><td>`dukaanpe-language-service`</td><td>Translation endpoint + supported languages + audit</td><td>Spring Boot</td><td>`LanguageServiceApplication.java`</td><td>`LanguageController.java`</td><td>H2 file/Postgres + JPA</td><td>REST</td><td><span class="badge partial">Partial</span></td><td>`.../SimpleLanguageService.java:36-45`</td></tr>
+          <tr><td>sync-offline-service</td><td>`dukaanpe-sync-offline-service`</td><td>Sync push/pull with dedupe and conflict flags</td><td>Spring Boot</td><td>`SyncOfflineServiceApplication.java`</td><td>`SyncController.java`</td><td>H2 file/Postgres + JPA</td><td>REST</td><td><span class="badge implemented">Implemented</span></td><td>`.../InMemorySyncService.java:42-85`</td></tr>
+          <tr><td>frontend</td><td>`dukaanpe-frontend`</td><td>Angular UI for login + operations + feature pages</td><td>Angular</td><td>`src/app/app.routes.ts`</td><td>Standalone route components</td><td>Browser storage</td><td>HTTP to gateway/services</td><td><span class="badge partial">Partial</span></td><td>`dukaanpe-frontend/src/app/app.routes.ts:5-84`, `.../core/services/backend-api.service.ts:58-463`</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" id="arch">
+      <h2>4) High-Level Architecture Diagram</h2>
+      <pre class="endpoint-pre">flowchart LR
+  FE[Angular Frontend :4200] --> GW[API Gateway :8080]
+  GW --> AUTH[auth-service :8081]
+  GW --> STORE[store-service :8082]
+  GW --> INV[product-inventory-service :8083]
+  GW --> BILL[billing-pos-service :8084]
+  GW --> UDHAR[udhar-khata-service :8085]
+  GW --> SUP[supplier-purchase-service :8086]
+  GW --> PAY[payment-service :8087]
+  GW --> CUST[customer-loyalty-service :8088]
+  GW --> GST[gst-tax-service :8089]
+  GW --> ANA[analytics-service :8090]
+  GW --> NOTIF[notification-service :8091]
+  GW --> LANG[language-service :8092]
+  GW --> SYNC[sync-offline-service :8093]
+
+  AUTH -.register.-> EUREKA[discovery-server :8761]
+  STORE -.register.-> EUREKA
+  INV -.register.-> EUREKA
+  BILL -.register.-> EUREKA
+  UDHAR -.register.-> EUREKA
+  SUP -.register.-> EUREKA
+  PAY -.register.-> EUREKA
+  CUST -.register.-> EUREKA
+  GST -.register.-> EUREKA
+  ANA -.register.-> EUREKA
+  NOTIF -.register.-> EUREKA
+  LANG -.register.-> EUREKA
+  SYNC -.register.-> EUREKA
+  GW -.register.-> EUREKA
+
+  BILL -- sync HTTP hook --> UDHAR
+  BILL -- optional HTTP hook --> SUP
+  SUP -- low-stock query --> INV
+  SUP -- GRN inventory adjust --> INV
+
+  subgraph Data
+    PG[(Postgres)]
+    H2[(H2/H2-file in dev)]
+  end
+
+  AUTH --> H2
+  STORE --> H2
+  INV --> H2
+  BILL --> H2
+  UDHAR --> H2
+  SUP --> H2
+  PAY --> H2
+  CUST --> H2
+  GST --> H2
+  ANA --> H2
+  NOTIF --> H2
+  LANG --> H2
+  SYNC --> H2
+      </pre>
+      <p class="small">Derived from `dukaanpe-api-gateway/src/main/resources/application.yml:9-74`, service `application.yml` files, and cross-service hook code in Billing/Supplier services.</p>
+    </section>
+
+    <section class="card" id="flows">
+      <h2>5) Major Project Flow Diagrams</h2>
+      <h3>Flow A - Login / session bootstrap</h3>
+      <pre class="endpoint-pre">sequenceDiagram
+  participant UI as Frontend
+  participant GW as API Gateway
+  participant AUTH as auth-service
+  UI->>GW: POST /api/auth/send-otp
+  GW->>AUTH: forward
+  AUTH-->>UI: OTP sent
+  UI->>GW: POST /api/auth/verify-otp
+  AUTH-->>UI: accessToken + refreshToken
+  UI->>UI: SessionService.saveFromAuthResponse()
+      </pre>
+      <h3>Flow B - POS billing with udhar hook (partial integration)</h3>
+      <pre class="endpoint-pre">sequenceDiagram
+  participant UI
+  participant GW
+  participant BILL
+  participant UDHAR
+  UI->>GW: POST /api/pos/calculate
+  GW->>BILL: calculate totals
+  UI->>GW: POST /api/bills
+  BILL->>BILL: persist bill/items
+  alt paymentMode=CREDIT and udhar hook enabled
+    BILL->>UDHAR: POST /api/udhar/credit
+    Note right of BILL: failure logged but bill still succeeds
+  end
+      </pre>
+      <h3>Flow C - Supplier auto-suggest / GRN inventory sync</h3>
+      <pre class="endpoint-pre">sequenceDiagram
+  participant UI
+  participant SUP
+  participant INV
+  UI->>SUP: GET /api/purchase-orders/auto-suggest
+  SUP->>INV: GET /api/inventory/low-stock
+  INV-->>SUP: low stock list
+  SUP-->>UI: grouped suggestions
+
+  UI->>SUP: PUT /api/grn/{id}/approve
+  SUP->>INV: POST /api/inventory/adjust
+  Note right of SUP: inventory sync failures are warn-only
+      </pre>
+    </section>
+
+    <section class="card" id="matrix">
+      <h2>6) Service Dependency Matrix / Map</h2>
+      <table>
+        <thead><tr><th>From</th><th>To</th><th>Dependency type</th><th>Evidence</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>frontend</td><td>api-gateway</td><td>Primary API path routing</td><td>`dukaanpe-frontend/src/environments/environment.ts:3`, `.../backend-api.service.ts:419-421`</td><td>Implemented</td></tr>
+          <tr><td>billing-pos-service</td><td>udhar-khata-service</td><td>HTTP hook for credit bills</td><td>`dukaanpe-billing-pos-service/src/main/java/com/dukaanpe/billing/service/BillingServiceImpl.java:341-365`</td><td>Partial (best-effort only)</td></tr>
+          <tr><td>billing-pos-service</td><td>supplier-purchase-service</td><td>Optional low-stock hook trigger</td><td>`.../BillingServiceImpl.java:376-383`</td><td>Disabled by default (`application.yml:52`)</td></tr>
+          <tr><td>supplier-purchase-service</td><td>product-inventory-service</td><td>Auto-suggest from low-stock API</td><td>`.../PurchaseOrderServiceImpl.java:130-137`</td><td>Implemented with fallback</td></tr>
+          <tr><td>supplier-purchase-service</td><td>product-inventory-service</td><td>GRN approval inventory adjust</td><td>`.../GrnServiceImpl.java:131-157`</td><td>Implemented with warn-only failure handling</td></tr>
+          <tr><td>all services</td><td>discovery-server</td><td>Eureka registration</td><td>all service `application.yml` under `eureka.client.service-url.defaultZone`</td><td>Implemented</td></tr>
+          <tr><td>services</td><td>DB</td><td>JPA + H2/Postgres profiles</td><td>each service `application.yml` datasource/jpa sections</td><td>Implemented, migration discipline partial</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" id="endpoints">
+      <h2>7) Endpoint Catalog (Code-Extracted)</h2>
+      <p>All endpoint entries below follow the requested structure. If a field is not directly provable from code in the scanned files, it is marked <strong>Not confirmed from code</strong>.</p>
+      <input id="endpointSearch" class="search-box" placeholder="Filter endpoints by service/method/path..." />
+      <div id="endpointContainer"></div>
+    </section>
+
+    <section class="card" id="postman">
+      <h2>8) Postman Testing Guide</h2>
+      <h3>Base setup</h3>
+      <ul>
+        <li>Gateway base URL: <span class="mono">http://localhost:8080</span> (from `dukaanpe-api-gateway/src/main/resources/application.yml:2`).</li>
+        <li>Auth flow first: `POST /api/auth/send-otp` then `POST /api/auth/verify-otp`, then use `Authorization: Bearer {{accessToken}}` for protected auth endpoints.</li>
+        <li>Many non-auth services do not show explicit service-level auth middleware in code; still test with token to simulate expected production posture.</li>
+      </ul>
+      <h3>Recommended execution order</h3>
+      <ol>
+        <li>Health checks: gateway + discovery + auth actuator endpoints.</li>
+        <li>Auth login and token acquisition.</li>
+        <li>Store -> Product/Inventory -> Billing -> Udhar.</li>
+        <li>Supplier/PO/GRN (after product inventory exists).</li>
+        <li>Payment and customer/loyalty.</li>
+        <li>GST and analytics.</li>
+        <li>Language, notifications, sync-offline.</li>
+      </ol>
+      <p class="small">Per-endpoint Postman fields are embedded inside each endpoint entry in section 7 (`How to Test in Postman`, `Sample Request`, `Sample Response`).</p>
+    </section>
+
+    <section class="card" id="ui-tests">
+      <h2>9) UI Manual Test Cases</h2>
+      <div id="uiCaseContainer"></div>
+    </section>
+
+    <section class="card" id="dev-style">
+      <h2>10) How the System Is Developed</h2>
+      <ul>
+        <li>Backend pattern is mostly Controller -> Service -> Repository with DTO wrappers (`ApiResponse`, `PagedResponse`) and validation annotations (`@Valid`, `@Positive`, etc.) in controllers.</li>
+        <li>Config is profile-based (`dev`, `postgres`) per service, with `management` endpoints and tracing tags in all service configs (`*/src/main/resources/application.yml`).</li>
+        <li>DB access uses Spring Data JPA, with default in-memory/file H2 for dev and optional Postgres profile. Flyway baseline exists but initial DDL still JPA-managed placeholder.</li>
+        <li>Auth strategy is JWT in auth-service (`JwtAuthenticationFilter`, `SecurityConfig`) and frontend `authInterceptor` adds bearer token (`dukaanpe-frontend/src/app/core/interceptors/auth.interceptor.ts:5-18`).</li>
+        <li>Inter-service comms are synchronous REST using `RestTemplate` in billing and supplier modules, no message broker confirmed from code.</li>
+        <li>Frontend architecture uses Angular standalone components + route guards + shared `BackendApiService` for backend calls and `SessionService` for local storage session state.</li>
+      </ul>
+    </section>
+
+    <section class="card" id="s2s">
+      <h2>11) Service-to-Service Dependency Details</h2>
+      <table>
+        <thead><tr><th>Service</th><th>Upstream callers</th><th>Downstream calls</th><th>DB/storage</th><th>Critical env vars</th><th>If unavailable...</th></tr></thead>
+        <tbody>
+          <tr><td>auth-service</td><td>frontend, gateway</td><td>Not confirmed from code</td><td>H2/Postgres</td><td>`JWT_SECRET`, datasource vars</td><td>All login/token flows blocked</td></tr>
+          <tr><td>billing-pos-service</td><td>frontend, gateway</td><td>udhar-service, supplier-service (optional)</td><td>H2/Postgres</td><td>`billing.udhar.*`, `billing.supplier-hook.*`</td><td>POS billing down; downstream hooks skipped</td></tr>
+          <tr><td>supplier-purchase-service</td><td>frontend, gateway, billing hook</td><td>inventory-service</td><td>H2/Postgres</td><td>`supplier.auto-suggest.*`, `supplier.grn.inventory-sync.*`</td><td>PO/GRN flows down, billing hook impact</td></tr>
+          <tr><td>notification-service</td><td>frontend, gateway, possible callbacks</td><td>channel adapters internal</td><td>H2-file/Postgres</td><td>`notification.max-attempts`, queue/retry props</td><td>Message send/callback flows unavailable</td></tr>
+          <tr><td>sync-offline-service</td><td>frontend, gateway</td><td>Not confirmed from code</td><td>H2-file/Postgres</td><td>`sync.dedupe-window-seconds`, `sync.conflict-window-seconds`</td><td>Offline replay/sync pull-push blocked</td></tr>
+          <tr><td>other domain services</td><td>frontend, gateway</td><td>Mostly none (local service logic)</td><td>H2/Postgres</td><td>datasource/eureka/profile vars</td><td>Their feature area unavailable</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" id="gaps">
+      <h2>12) Deep Incomplete / Missing / Should-Have Analysis</h2>
+      <h3>12.1 Feature completion analysis</h3>
+      <ul>
+        <li><strong>Auth:</strong> OTP login and JWT flow work from code; broader identity controls (MFA policy, lockout policy, audit hardening) are not confirmed from code.</li>
+        <li><strong>Billing-Udhar integration:</strong> works as best-effort hook, but failures only warn and do not queue/retry robustly (`BillingServiceImpl.java:360-365`).</li>
+        <li><strong>Supplier-GRN-Inventory:</strong> approval updates inventory via sync hook, but failures are warn-only and no compensation workflow is shown (`GrnServiceImpl.java:152-157`).</li>
+        <li><strong>Analytics:</strong> dashboard/sales/product endpoints exist; advanced analytics governance/versioned contracts not confirmed from code.</li>
+        <li><strong>Frontend:</strong> many routes implemented; still partial parity vs backend breadth (many admin/deactivation endpoints not represented in UI flows).</li>
+      </ul>
+
+      <h3>12.2 Service completion analysis</h3>
+      <p>Per-service completeness levels are reflected in inventory and endpoint status badges. Broadly:</p>
+      <ul>
+        <li>Implemented core CRUD/services: store, inventory, payment, customer-loyalty, gst, udhar.</li>
+        <li>Partial with integration resilience gaps: billing, supplier-purchase, notification, language, analytics.</li>
+        <li>Platform layers implemented but basic-hardening level: gateway, discovery.</li>
+      </ul>
+
+      <h3>12.3 Missing pieces by severity</h3>
+      <div id="gapContainer"></div>
+
+      <h3>12.4 Missing engineering fundamentals</h3>
+      <ul>
+        <li>Uniform authz/security middleware not confirmed beyond auth-service.</li>
+        <li>Migration-first schema discipline missing (baseline flyway placeholder scripts, JPA auto update in default profiles).</li>
+        <li>No distributed rate-limiter or resilient inter-service messaging pattern confirmed.</li>
+        <li>OpenAPI annotation-driven contract docs not confirmed in controllers.</li>
+        <li>Operational hardening (circuit breakers, dead-letter style retry, idempotency beyond selected endpoints) is partial.</li>
+      </ul>
+
+      <h3>12.5 Frontend-backend gaps</h3>
+      <ul>
+        <li>Frontend `BackendApiService` covers common operational APIs but does not expose every backend endpoint (e.g., auth owner-only user management, many delete/cancel/admin actions).</li>
+        <li>UI login page advertises demo OTP flow (`login-page.component.ts:17`) which is suitable for dev/demo but not production posture.</li>
+        <li>Feature stub component exists as scaffold (`feature-stub-page.component.ts:45-49`) indicating planned expandable screens.</li>
+      </ul>
+
+      <h3>12.6 Suggested completion roadmap</h3>
+      <ol>
+        <li>Enforce security consistency across all services (authn/authz middleware + sensitive route role checks).</li>
+        <li>Replace JPA `ddl-auto` default reliance with migration-first schema management and real V1+ scripts.</li>
+        <li>Add robust retry/compensation patterns for billing/supplier cross-service hooks.</li>
+        <li>Expand integration and contract tests around edge and failure paths.</li>
+        <li>Close frontend-backend coverage gaps for admin flows and destructive operations.</li>
+      </ol>
+    </section>
+
+    <section class="card" id="intern">
+      <h2>13) Intern Action Plan</h2>
+      <ol>
+        <li>Read `dukaanpe-api-gateway/src/main/resources/application.yml` and `dukaanpe-frontend/src/app/core/services/backend-api.service.ts` first to understand routing and API consumption map.</li>
+        <li>Run and test login flow (`/api/auth/send-otp`, `/api/auth/verify-otp`) and verify frontend session handling (`session.service.ts`).</li>
+        <li>Start contribution with low-risk, high-value tasks:
+          <ul>
+            <li>Add migration SQL for one service replacing baseline placeholder.</li>
+            <li>Add auth checks to one non-auth service.</li>
+            <li>Add integration tests for unhappy paths (validation errors, downstream call failures).</li>
+          </ul>
+        </li>
+        <li>Avoid first-week risky areas: cross-service transaction semantics, broad schema refactor, global auth rewrite without staged rollout.</li>
+      </ol>
+      <h3>First-week suggested tasks</h3>
+      <ul>
+        <li>Task 1: add DB migration scripts for `store-service` and disable `ddl-auto` in dev profile only after validation.</li>
+        <li>Task 2: add role-based auth guard to one sensitive CRUD path in `store-service`.</li>
+        <li>Task 3: add one retry test and one failure-path integration test for billing->udhar hook.</li>
+        <li>Task 4: add endpoint-level Postman collection starter for auth+store+products+billing path.</li>
+      </ul>
+    </section>
+
+    <section class="card" id="risk">
+      <h2>14) Risks / Assumptions / Unknowns</h2>
+      <ul>
+        <li>External third-party provider integration details are not confirmed from code (notification channel adapters and translation providers are abstraction-based).</li>
+        <li>Production secrets and environment values are not included; deployment hardening assumptions remain unknown.</li>
+        <li>Some docs in repository may claim broader completion; this report trusts code-first evidence where conflicts exist.</li>
+        <li>Endpoint auth requirements for non-auth services are not confirmed from code (no service-local security configs found).</li>
+      </ul>
+    </section>
+
+    <section class="card" id="evidence">
+      <h2>15) Evidence Appendix</h2>
+      <table>
+        <thead><tr><th>File</th><th>Line(s)</th><th>Supports</th></tr></thead>
+        <tbody>
+          <tr><td>`pom.xml`</td><td>14-30</td><td>Backend module inventory (15 services/modules)</td></tr>
+          <tr><td>`docker-compose.yml`</td><td>24-60</td><td>Gateway service mappings and env-based upstream routing</td></tr>
+          <tr><td>`dukaanpe-api-gateway/src/main/resources/application.yml`</td><td>9-74</td><td>Gateway route predicates for all business APIs</td></tr>
+          <tr><td>`dukaanpe-api-gateway/src/main/java/com/dukaanpe/gateway/filter/RateLimitingFilter.java`</td><td>18-43</td><td>In-memory per-IP rate limiting implementation</td></tr>
+          <tr><td>`dukaanpe-auth-service/src/main/java/com/dukaanpe/auth/config/SecurityConfig.java`</td><td>27-37</td><td>Auth service security rules, permitAll/authenticated behavior</td></tr>
+          <tr><td>`dukaanpe-billing-pos-service/src/main/java/com/dukaanpe/billing/service/BillingServiceImpl.java`</td><td>341-386</td><td>Udhar/supplier hooks and warn-only failures</td></tr>
+          <tr><td>`dukaanpe-supplier-purchase-service/src/main/java/com/dukaanpe/supplierpurchase/service/PurchaseOrderServiceImpl.java`</td><td>130-187</td><td>Inventory-driven auto-suggest dependency</td></tr>
+          <tr><td>`dukaanpe-supplier-purchase-service/src/main/java/com/dukaanpe/supplierpurchase/service/GrnServiceImpl.java`</td><td>131-157</td><td>Inventory sync call on GRN approval + failure handling</td></tr>
+          <tr><td>`dukaanpe-notification-service/src/main/java/com/dukaanpe/notification/service/InMemoryNotificationService.java`</td><td>86-95</td><td>Scheduled retry mechanism</td></tr>
+          <tr><td>`dukaanpe-sync-offline-service/src/main/java/com/dukaanpe/syncoffline/service/InMemorySyncService.java`</td><td>42-85</td><td>Dedupe/conflict logic for sync events</td></tr>
+          <tr><td>`dukaanpe-frontend/src/app/app.routes.ts`</td><td>5-84</td><td>17 UI routes/screens mapping</td></tr>
+          <tr><td>`dukaanpe-frontend/src/app/core/services/backend-api.service.ts`</td><td>58-463</td><td>Frontend API integration paths and gateway/direct resolution</td></tr>
+          <tr><td>`dukaanpe-auth-service/src/main/resources/db/migration/V1__baseline.sql`</td><td>1-2</td><td>Flyway baseline placeholder migration strategy</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</div>
+
+<script>
+const endpointBundles = [
+  {
+    service: 'auth-service',
+    sourceFile: 'dukaanpe-auth-service/src/main/java/com/dukaanpe/auth/controller/AuthController.java',
+    status: 'Implemented',
+    auth: 'Mixed (send-otp/verify-otp/refresh-token are permitAll; others authenticated)',
+    endpoints: `
+POST /api/auth/send-otp
+POST /api/auth/verify-otp
+POST /api/auth/refresh-token
+POST /api/auth/logout
+GET /api/auth/me
+PUT /api/auth/me
+POST /api/auth/change-password
+GET /api/auth/sessions
+DELETE /api/auth/sessions/{sessionId}
+GET /api/auth/devices
+DELETE /api/auth/devices/{deviceId}
+GET /api/auth/users
+PUT /api/auth/users/{id}/role
+DELETE /api/auth/users/{id}
+`
+  },
+  {
+    service: 'store-service',
+    sourceFile: 'dukaanpe-store-service/src/main/java/com/dukaanpe/store/controller/StoreController.java',
+    status: 'Implemented',
+    auth: 'Not confirmed from code',
+    endpoints: `
+POST /api/stores
+GET /api/stores
+GET /api/stores/{id}
+PUT /api/stores/{id}
+DELETE /api/stores/{id}
+GET /api/stores/{id}/timings
+PUT /api/stores/{id}/timings
+POST /api/stores/{id}/staff
+GET /api/stores/{id}/staff
+PUT /api/stores/{id}/staff/{staffId}
+DELETE /api/stores/{id}/staff/{staffId}
+GET /api/stores/categories
+PUT /api/stores/{id}/subscription
+GET /api/stores/{id}/licenses
+PUT /api/stores/{id}/licenses
+`
+  },
+  {
+    service: 'product-inventory-service',
+    sourceFile: 'dukaanpe-product-inventory-service/src/main/java/com/dukaanpe/inventory/controller/ProductController.java + InventoryController.java',
+    status: 'Implemented',
+    auth: 'Not confirmed from code',
+    endpoints: `
+POST /api/products/categories
+GET /api/products/categories
+PUT /api/products/categories/{id}
+DELETE /api/products/categories/{id}
+POST /api/products
+GET /api/products
+GET /api/products/{id}
+PUT /api/products/{id}
+DELETE /api/products/{id}
+GET /api/products/search
+GET /api/products/barcode/{barcode}
+GET /api/products/category/{categoryId}
+GET /api/inventory
+GET /api/inventory/product/{productId}
+PUT /api/inventory/product/{productId}
+POST /api/inventory/adjust
+GET /api/inventory/low-stock
+GET /api/inventory/transactions
+POST /api/inventory/expiry
+GET /api/inventory/expiry/upcoming
+GET /api/inventory/expiry/expired
+`
+  },
+  {
+    service: 'billing-pos-service',
+    sourceFile: 'dukaanpe-billing-pos-service/src/main/java/com/dukaanpe/billing/controller/BillingController.java + PosController.java',
+    status: 'Partial',
+    auth: 'Not confirmed from code',
+    endpoints: `
+POST /api/bills
+GET /api/bills
+GET /api/bills/{id}
+GET /api/bills/number/{billNumber}
+PUT /api/bills/{id}/cancel
+GET /api/bills/today-summary
+GET /api/bills/search
+POST /api/pos/calculate
+`
+  },
+  {
+    service: 'udhar-khata-service',
+    sourceFile: 'dukaanpe-udhar-khata-service/src/main/java/com/dukaanpe/udhar/controller/UdharKhataController.java',
+    status: 'Implemented',
+    auth: 'Not confirmed from code',
+    endpoints: `
+POST /api/khata/customers
+GET /api/khata/customers
+GET /api/khata/customers/{id}
+PUT /api/khata/customers/{id}
+DELETE /api/khata/customers/{id}
+GET /api/khata/customers/search
+GET /api/khata/customers/top-defaulters
+POST /api/udhar/credit
+POST /api/udhar/payment
+GET /api/udhar/entries
+GET /api/udhar/summary
+GET /api/udhar/overdue
+POST /api/udhar/reminders
+GET /api/udhar/reminders/pending
+PUT /api/udhar/reminders/{id}/send
+GET /api/udhar/reminders/history
+POST /api/udhar/settlements
+GET /api/udhar/settlements
+GET /api/udhar/settlements/report
+`
+  },
+  {
+    service: 'supplier-purchase-service',
+    sourceFile: 'dukaanpe-supplier-purchase-service/src/main/java/com/dukaanpe/supplierpurchase/controller/*.java',
+    status: 'Partial',
+    auth: 'Not confirmed from code',
+    endpoints: `
+POST /api/suppliers
+GET /api/suppliers
+GET /api/suppliers/{id}
+PUT /api/suppliers/{id}
+DELETE /api/suppliers/{id}
+GET /api/suppliers/search
+POST /api/purchase-orders
+GET /api/purchase-orders
+GET /api/purchase-orders/{id}
+PUT /api/purchase-orders/{id}
+PUT /api/purchase-orders/{id}/status
+DELETE /api/purchase-orders/{id}
+GET /api/purchase-orders/auto-suggest
+POST /api/grn
+GET /api/grn
+GET /api/grn/{id}
+PUT /api/grn/{id}/verify
+PUT /api/grn/{id}/approve
+`
+  },
+  {
+    service: 'payment-service',
+    sourceFile: 'dukaanpe-payment-service/src/main/java/com/dukaanpe/payment/controller/*.java',
+    status: 'Implemented',
+    auth: 'Not confirmed from code',
+    endpoints: `
+POST /api/payments/initiate
+PUT /api/payments/{transactionId}/complete
+PUT /api/payments/{transactionId}/fail
+GET /api/payments
+GET /api/payments/{transactionId}
+POST /api/payments/{transactionId}/refund
+POST /api/payments/upi/generate-link
+POST /api/payments/upi/generate-qr
+GET /api/payments/upi/qr-codes
+POST /api/payments/upi/qr-codes
+POST /api/payments/reconciliation
+GET /api/payments/reconciliation
+POST /api/payments/cash-register/open
+POST /api/payments/cash-register/close
+GET /api/payments/cash-register/current
+`
+  },
+  {
+    service: 'customer-loyalty-service',
+    sourceFile: 'dukaanpe-customer-loyalty-service/src/main/java/com/dukaanpe/customerloyalty/controller/*.java',
+    status: 'Implemented',
+    auth: 'Not confirmed from code',
+    endpoints: `
+POST /api/customers
+GET /api/customers
+GET /api/customers/search
+GET /api/customers/phone/{phone}
+GET /api/customers/top
+GET /api/customers/{id}
+PUT /api/customers/{id}
+DELETE /api/customers/{id}
+POST /api/customers/{id}/purchases
+GET /api/customers/{id}/purchases
+GET /api/loyalty/customer/{customerId}
+POST /api/loyalty/earn
+POST /api/loyalty/redeem
+GET /api/loyalty/transactions
+GET /api/loyalty/settings
+PUT /api/loyalty/settings
+POST /api/loyalty/campaigns
+GET /api/loyalty/campaigns
+GET /api/loyalty/campaigns/active
+GET /api/loyalty/campaigns/{id}
+PUT /api/loyalty/campaigns/{id}
+DELETE /api/loyalty/campaigns/{id}
+GET /api/loyalty/campaigns/{id}/eligible-customers/preview
+GET /api/loyalty/campaigns/{id}/eligible-customers/preview/count
+`
+  },
+  {
+    service: 'gst-tax-service',
+    sourceFile: 'dukaanpe-gst-tax-service/src/main/java/com/dukaanpe/gsttax/controller/*.java',
+    status: 'Implemented',
+    auth: 'Not confirmed from code',
+    endpoints: `
+POST /api/gst/invoices/generate
+GET /api/gst/invoices/{id}
+GET /api/gst/invoices
+POST /api/gst/returns/prepare
+GET /api/gst/returns/{id}
+POST /api/gst/hsn
+GET /api/gst/hsn/{id}
+GET /api/gst/hsn
+PUT /api/gst/hsn/{id}
+DELETE /api/gst/hsn/{id}
+GET /api/tax/summary
+`
+  },
+  {
+    service: 'analytics-service',
+    sourceFile: 'dukaanpe-analytics-service/src/main/java/com/dukaanpe/analytics/controller/AnalyticsController.java',
+    status: 'Partial',
+    auth: 'Not confirmed from code',
+    endpoints: `
+POST /api/analytics/seed
+GET /api/analytics/dashboard
+GET /api/analytics/sales-insights
+GET /api/analytics/product-insights
+`
+  },
+  {
+    service: 'notification-service',
+    sourceFile: 'dukaanpe-notification-service/src/main/java/com/dukaanpe/notification/controller/NotificationController.java',
+    status: 'Partial',
+    auth: 'Not confirmed from code',
+    endpoints: `
+POST /api/notifications/send
+GET /api/notifications
+POST /api/notifications/callback
+`
+  },
+  {
+    service: 'language-service',
+    sourceFile: 'dukaanpe-language-service/src/main/java/com/dukaanpe/language/controller/LanguageController.java',
+    status: 'Partial',
+    auth: 'Not confirmed from code',
+    endpoints: `
+POST /api/language/translate
+GET /api/language/supported
+`
+  },
+  {
+    service: 'sync-offline-service',
+    sourceFile: 'dukaanpe-sync-offline-service/src/main/java/com/dukaanpe/syncoffline/controller/SyncController.java',
+    status: 'Implemented',
+    auth: 'Not confirmed from code',
+    endpoints: `
+POST /api/sync/push
+GET /api/sync/pull
+`
+  }
+];
+
+const endpointEntries = [];
+for (const bundle of endpointBundles) {
+  const lines = bundle.endpoints.split('\n').map(s => s.trim()).filter(Boolean);
+  for (const line of lines) {
+    const method = line.split(' ')[0];
+    const path = line.substring(method.length + 1);
+    endpointEntries.push({ ...bundle, method, path });
+  }
+}
+
+function endpointTemplate(e) {
+  return `Service: ${e.service}\nEndpoint: ${e.path}\nMethod: ${e.method}\nStatus: ${e.status}\nPurpose: Not confirmed from code\nSource File: ${e.sourceFile}\nHandler Function: Not confirmed from code\nAuth: ${e.auth}\nRoles/Permissions: Not confirmed from code\nHeaders: Content-Type: application/json; Authorization: Bearer <token> (where applicable)\nPath Params: Not confirmed from code\nQuery Params: Not confirmed from code\nRequest Body: Not confirmed from code\nValidation: Jakarta Bean Validation annotations present in many controllers; field-level exact rule per endpoint not fully expanded here\nSuccess Response: ApiResponse wrapper with data (or 204 for some deletes)\nError Responses: Validation errors, resource not found, illegal argument, and internal errors (exact mapping varies by service)\nDB/State Changes: Not confirmed from code\nDownstream Calls: Not confirmed from code\nEvents Published: Not confirmed from code\nEvents Consumed: Not confirmed from code\nPreconditions: Service running and reachable via gateway\nHow to Test in Postman: ${e.method} http://localhost:8080${e.path} with required headers and sample payload as applicable\nSample Request: ${e.method} http://localhost:8080${e.path}\nSample Response: {\"success\":true,\"message\":\"Success\",\"data\":{}}\nKnown Gaps / Incomplete Areas: See section 12 for service-level gaps\nEvidence: ${e.sourceFile}`;
+}
+
+const endpointContainer = document.getElementById('endpointContainer');
+const endpointSearch = document.getElementById('endpointSearch');
+
+function renderEndpoints(filter = '') {
+  endpointContainer.innerHTML = '';
+  const normalized = filter.toLowerCase();
+  endpointEntries
+    .filter(e => (`${e.service} ${e.method} ${e.path}`).toLowerCase().includes(normalized))
+    .forEach((e, idx) => {
+      const wrap = document.createElement('details');
+      wrap.className = 'details';
+      wrap.open = idx < 5;
+      const badgeClass = e.status === 'Implemented' ? 'implemented' : (e.status === 'Partial' ? 'partial' : 'stub');
+      wrap.innerHTML = `<summary>${e.method} ${e.path} <span class="badge ${badgeClass}">${e.status}</span> <span class="small">${e.service}</span></summary><div class="content"><pre class="endpoint-pre">${endpointTemplate(e)}</pre></div>`;
+      endpointContainer.appendChild(wrap);
+    });
+}
+endpointSearch.addEventListener('input', () => renderEndpoints(endpointSearch.value));
+renderEndpoints('');
+
+const uiCases = [
+  {id:'UI-001',page:'Login',scenario:'Successful OTP login',priority:'High',role:'Any',apis:'/api/auth/send-otp, /api/auth/verify-otp',evidence:'dukaanpe-frontend/src/app/features/auth/login-page.component.ts:135-182'},
+  {id:'UI-002',page:'Login',scenario:'Invalid phone validation',priority:'High',role:'Any',apis:'None until valid',evidence:'.../login-page.component.ts:136-139'},
+  {id:'UI-003',page:'Dashboard',scenario:'Load analytics snapshot',priority:'High',role:'Authenticated',apis:'/api/analytics/dashboard',evidence:'dukaanpe-frontend/src/app/features/dashboard/dashboard-page.component.ts:321-331'},
+  {id:'UI-004',page:'Analytics',scenario:'Seed then load all insights',priority:'High',role:'Authenticated',apis:'/api/analytics/seed,/dashboard,/sales-insights,/product-insights',evidence:'.../analytics-page.component.ts:648-715'},
+  {id:'UI-005',page:'Analytics',scenario:'Export CSV and JSON',priority:'Medium',role:'Authenticated',apis:'No new API; client-side export',evidence:'.../analytics-page.component.ts:566-603'},
+  {id:'UI-006',page:'GST',scenario:'Generate invoice + prepare return',priority:'High',role:'Authenticated',apis:'/api/gst/invoices/generate,/api/gst/returns/prepare',evidence:'dukaanpe-frontend/e2e/p1-gst-workflow.spec.ts:72-136'},
+  {id:'UI-007',page:'Billing/POS',scenario:'Barcode add + calculate + create bill',priority:'High',role:'Authenticated',apis:'/api/products/barcode/{barcode}, /api/pos/calculate, /api/bills',evidence:'dukaanpe-frontend/e2e/p1-pos-checkout.spec.ts:23-63'},
+  {id:'UI-008',page:'Udhar',scenario:'Create reminder and mark sent',priority:'High',role:'Authenticated',apis:'/api/udhar/reminders, /api/udhar/reminders/{id}/send',evidence:'dukaanpe-frontend/e2e/p1-udhar-reminders.spec.ts:87-125'},
+  {id:'UI-009',page:'Operations',scenario:'Load stores/products/bills summary',priority:'Medium',role:'Authenticated',apis:'/api/stores,/api/products,/api/bills',evidence:'dukaanpe-frontend/src/app/features/operations/operations-page.component.ts:146-161'},
+  {id:'UI-010',page:'Language',scenario:'Translate text and list supported languages',priority:'Medium',role:'Authenticated',apis:'/api/language/supported,/api/language/translate',evidence:'dukaanpe-frontend/src/app/core/services/backend-api.service.ts:304-310'},
+  {id:'UI-011',page:'Notifications',scenario:'Send notification and list by store',priority:'Medium',role:'Authenticated',apis:'/api/notifications/send,/api/notifications',evidence:'.../backend-api.service.ts:312-319'},
+  {id:'UI-012',page:'Sync',scenario:'Push and pull sync events',priority:'Medium',role:'Authenticated',apis:'/api/sync/push,/api/sync/pull',evidence:'.../backend-api.service.ts:321-328'},
+  {id:'UI-013',page:'Suppliers',scenario:'CRUD supplier and search',priority:'Medium',role:'Authenticated',apis:'/api/suppliers*',evidence:'.../backend-api.service.ts:244-264'},
+  {id:'UI-014',page:'Suppliers',scenario:'PO and auto-suggest workflow',priority:'Medium',role:'Authenticated',apis:'/api/purchase-orders,/api/purchase-orders/auto-suggest',evidence:'.../backend-api.service.ts:266-285'},
+  {id:'UI-015',page:'Suppliers',scenario:'GRN create-verify-approve',priority:'Medium',role:'Authenticated',apis:'/api/grn,/api/grn/{id}/verify,/api/grn/{id}/approve',evidence:'.../backend-api.service.ts:287-302'},
+  {id:'UI-016',page:'Customers',scenario:'List/search customers',priority:'Medium',role:'Authenticated',apis:'/api/customers,/api/customers/search',evidence:'.../backend-api.service.ts:145-160'},
+  {id:'UI-017',page:'Payments',scenario:'List transactions',priority:'Low',role:'Authenticated',apis:'/api/payments',evidence:'.../backend-api.service.ts:162-173'},
+  {id:'UI-018',page:'Feature stub',scenario:'Scaffold page displays placeholder',priority:'Low',role:'Authenticated',apis:'None',evidence:'dukaanpe-frontend/src/app/features/stubs/feature-stub-page.component.ts:45-49'},
+  {id:'UI-019',page:'Routing',scenario:'Guest guard redirects from login if already authenticated',priority:'Medium',role:'Authenticated',apis:'None',evidence:'dukaanpe-frontend/src/app/core/guards/guest.guard.ts'},
+  {id:'UI-020',page:'Routing',scenario:'Auth guard blocks private routes without session',priority:'High',role:'Guest',apis:'None',evidence:'dukaanpe-frontend/src/app/core/guards/auth.guard.ts:5-12'},
+  {id:'UI-021',page:'Session',scenario:'Bearer token injection',priority:'High',role:'Authenticated',apis:'All protected APIs',evidence:'dukaanpe-frontend/src/app/core/interceptors/auth.interceptor.ts:5-18'},
+  {id:'UI-022',page:'Smoke',scenario:'Core route reachability smoke',priority:'High',role:'Authenticated',apis:'Multiple',evidence:'dukaanpe-frontend/e2e/smoke.spec.ts:22-26'},
+  {id:'UI-023',page:'Analytics compare',scenario:'Compare previous window enabled',priority:'Medium',role:'Authenticated',apis:'/api/analytics/dashboard,/sales-insights',evidence:'dukaanpe-frontend/src/app/features/analytics/analytics-page.component.ts:718-743'},
+  {id:'UI-024',page:'Login demo',scenario:'Demo credentials path',priority:'Low',role:'Any',apis:'/api/auth/*',evidence:'dukaanpe-frontend/src/app/features/auth/login-page.component.ts:17'}
+];
+
+const uiCaseContainer = document.getElementById('uiCaseContainer');
+for (const c of uiCases) {
+  const d = document.createElement('details');
+  d.className = 'details';
+  d.innerHTML = `<summary>${c.id} - ${c.page} - ${c.scenario}</summary><div class="content"><pre class="endpoint-pre">Test Case ID: ${c.id}\nModule/Page: ${c.page}\nScenario: ${c.scenario}\nPriority: ${c.priority}\nUser Role: ${c.role}\nPreconditions: User session and required test data available\nTest Data: Store/customer/product IDs as applicable\nSteps: Navigate to page; perform action; observe result\nExpected Result: UI updates correctly and API outcomes are reflected\nRelated APIs: ${c.apis}\nNegative/Edge Variations: Invalid input, empty state, backend failure\nCurrent Implementation Note: Partial maturity; verify section 12 gaps\nEvidence: ${c.evidence}</pre></div>`;
+  uiCaseContainer.appendChild(d);
+}
+
+const gaps = [
+  ['GAP-001','Security not uniformly enforced across services','Platform security','Missing Security','Critical','Only auth-service has explicit SecurityConfig','Auth-service security filter chain exists','Equivalent security filter chains and role checks on other services','Direct service endpoints may be exposed without authz','Potential unauthorized access and inconsistent trust boundaries','Shared security baseline for every microservice','Create reusable security starter and apply service-by-service','Yes','Yes','Yes','Yes','auth SecurityConfig + no other *Security*.java files','Confirmed from code'],
+  ['GAP-002','Migration scripts are placeholders while JPA auto-update is active','Database lifecycle','Missing DB Layer','High','Flyway V1 baseline comments only','V1 baseline SQL exists per service','Concrete DDL migrations and strict migration execution','Schema drift and non-repeatable environments','Upgrade/deploy instability','Versioned migration chain with tested rollback strategy','Write V1/V2 migrations for one pilot service first','Yes','No','Medium','High','V1__baseline.sql + application.yml ddl-auto update','Confirmed from code'],
+  ['GAP-003','Billing -> Udhar hook has no robust retry queue','Billing integration','Broken Integration','High','Best-effort HTTP call in try/catch','Warn log only on failure','Persistent retry/compensation/event outbox','Credit ledger can diverge from billing','Financial reconciliation mismatch','Outbox + retry worker + dead-letter path','Implement outbox table and scheduled dispatcher','Yes','Yes','Yes','High','BillingServiceImpl 360-365','Confirmed from code'],
+  ['GAP-004','GRN inventory sync has warn-only failure handling','Supplier/inventory integration','Broken Integration','High','HTTP adjust call wrapped in try/catch','No blocking/compensating action on failure','Retry/circuit-breaker/repair workflow','Stock can drift from GRN truth','Inventory inaccuracies','Reliable delivery + reconciliation task','Add failed-sync persistence and replay endpoint','Yes','Yes','Yes','High','GrnServiceImpl 152-157','Confirmed from code'],
+  ['GAP-005','Gateway rate limit is in-memory and instance-local','Gateway resilience','Missing Infra','Medium','ConcurrentHashMap based per-IP limiter','Basic 100 req/sec window','Distributed/global rate limiter if scaled','Ineffective in multi-instance deployment','Burst abuse may bypass limits','Redis/bucket-based shared limiter','Introduce distributed limiter in gateway','Yes','No','No','Medium','RateLimitingFilter 21-43','Confirmed from code'],
+  ['GAP-006','OpenAPI annotations not present in controllers','API governance','Missing Documentation from Code','Medium','No @Operation/@Tag in controllers','springdoc only in selected service configs','Annotation-driven API docs/contracts','Harder contract discovery and drift detection','Testing/doc mismatch risk','OpenAPI annotations or generated contracts pipeline','Add springdoc annotations incrementally','Yes','No','No','Low','grep @Operation no results','Confirmed from code'],
+  ['GAP-007','Frontend does not cover all backend admin endpoints','UI/API parity','Missing UI Wiring','Medium','Backend has broad endpoint surface','Core operational flows wired','UI screens/actions for admin/deactivation and role management','Manual API-only ops for many actions','Operational friction','Feature parity matrix and implementation plan','Create backlog from endpoint diff','Yes','No','Medium','Medium','backend-api.service vs controller coverage','Strongly inferred'],
+  ['GAP-008','Default profiles still demo-friendly OTP behavior','Auth hardening','Missing Security','Medium','JWT_ALLOW_FIXED_OTP default true in compose/dev context','Easy local onboarding','Strict OTP policy in non-dev environments','Weak auth if misconfigured in shared env','Security posture downgrade','Environment-specific secure defaults','Lock fixed OTP to explicit local profile only','Yes','No','Yes','High','docker-compose auth env + auth application.yml','Confirmed from code'],
+  ['GAP-009','No message broker/event backbone confirmed','Scalability architecture','Missing Infra','Low','All integrations are synchronous HTTP','Simple architecture','Async decoupling for high-latency workflows','Tight coupling under load','Latency and cascading failure risk','Introduce event bus for key workflows','Pilot notifications or billing hooks async','Yes','No','No','Low','code search for Kafka/Rabbit none','Confirmed from code'],
+  ['GAP-010','Observability present but service-level custom metrics are limited','Ops readiness','Missing Observability','Low','Management endpoints + tracing tags configured','Baseline metrics available','Business KPIs and hook-failure counters','Harder alerting for domain failures','Slow incident triage','Add service custom meters and dashboards','Implement first in billing/supplier hooks','Yes','No','No','Low','service application.yml management blocks','Strongly inferred']
+];
+
+const gapContainer = document.getElementById('gapContainer');
+for (const g of gaps) {
+  const sevClass = g[4] === 'Critical' ? 'sev-critical' : (g[4] === 'High' ? 'sev-high' : (g[4] === 'Medium' ? 'sev-medium' : 'sev-low'));
+  const d = document.createElement('details');
+  d.className = 'details';
+  d.innerHTML = `<summary>${g[0]} - ${g[1]} <span class="badge ${sevClass}">${g[4]}</span></summary><div class="content"><pre class="endpoint-pre">Gap ID: ${g[0]}\nTitle: ${g[1]}\nAffected Area: ${g[2]}\nType: ${g[3]}\nSeverity: ${g[4]}\nCurrent State: ${g[5]}\nWhat Exists Today: ${g[6]}\nWhat Is Missing: ${g[7]}\nWhy It Matters: ${g[8]}\nImpact: ${g[9]}\nWhat Should Exist: ${g[10]}\nRecommended Next Step: ${g[11]}\nCan Intern Take This Up?: ${g[12]}\nBlocks Testing?: ${g[13]}\nBlocks Demo?: ${g[14]}\nBlocks Production?: ${g[15]}\nEvidence: ${g[16]}\nConfidence: ${g[17]}\nNotes: Prioritize by severity and integration dependency.</pre></div>`;
+  gapContainer.appendChild(d);
+}
+</script>
+</body>
+</html>
+
