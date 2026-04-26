@@ -1,0 +1,3 @@
+com\dukaanpe\billing\BillingPosServiceApplicationTests.class
+com\dukaanpe\billing\BillingControllerIntegrationTests.class
+com\dukaanpe\billing\BillingHooksContractTests.class
