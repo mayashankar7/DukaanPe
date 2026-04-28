@@ -1,0 +1,5 @@
+com\dukaanpe\supplierpurchase\SupplierPurchaseServiceApplicationTests.class
+com\dukaanpe\supplierpurchase\GrnInventoryHookContractTests.class
+com\dukaanpe\supplierpurchase\SupplierControllerIntegrationTests.class
+com\dukaanpe\supplierpurchase\GrnControllerIntegrationTests.class
+com\dukaanpe\supplierpurchase\PurchaseOrderControllerIntegrationTests.class
