@@ -1,0 +1,12 @@
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-language-service\src\main\java\com\dukaanpe\language\LanguageServiceApplication.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-language-service\src\main\java\com\dukaanpe\language\service\LanguageService.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-language-service\src\main\java\com\dukaanpe\language\dto\TranslateRequest.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-language-service\src\main\java\com\dukaanpe\language\service\SimpleLanguageService.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-language-service\src\main\java\com\dukaanpe\language\dto\TranslateResponse.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-language-service\src\main\java\com\dukaanpe\language\entity\TranslationAuditEntity.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-language-service\src\main\java\com\dukaanpe\language\exception\GlobalExceptionHandler.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-language-service\src\main\java\com\dukaanpe\language\service\adapter\LexiconTranslationProvider.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-language-service\src\main\java\com\dukaanpe\language\repository\TranslationAuditRepository.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-language-service\src\main\java\com\dukaanpe\language\dto\ApiResponse.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-language-service\src\main\java\com\dukaanpe\language\controller\LanguageController.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-language-service\src\main\java\com\dukaanpe\language\service\adapter\TranslationProvider.java

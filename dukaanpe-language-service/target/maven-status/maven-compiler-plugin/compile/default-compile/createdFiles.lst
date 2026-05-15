@@ -1,0 +1,15 @@
+com\dukaanpe\language\dto\TranslateResponse$TranslateResponseBuilder.class
+com\dukaanpe\language\repository\TranslationAuditRepository.class
+com\dukaanpe\language\exception\GlobalExceptionHandler.class
+com\dukaanpe\language\entity\TranslationAuditEntity.class
+com\dukaanpe\language\service\adapter\LexiconTranslationProvider.class
+com\dukaanpe\language\dto\TranslateRequest.class
+com\dukaanpe\language\dto\ApiResponse.class
+com\dukaanpe\language\entity\TranslationAuditEntity$TranslationAuditEntityBuilder.class
+com\dukaanpe\language\dto\ApiResponse$ApiResponseBuilder.class
+com\dukaanpe\language\LanguageServiceApplication.class
+com\dukaanpe\language\controller\LanguageController.class
+com\dukaanpe\language\dto\TranslateResponse.class
+com\dukaanpe\language\service\SimpleLanguageService.class
+com\dukaanpe\language\service\adapter\TranslationProvider.class
+com\dukaanpe\language\service\LanguageService.class
