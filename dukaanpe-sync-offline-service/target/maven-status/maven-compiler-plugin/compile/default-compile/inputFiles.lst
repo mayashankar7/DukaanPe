@@ -1,0 +1,10 @@
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-sync-offline-service\src\main\java\com\dukaanpe\syncoffline\repository\SyncEventRepository.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-sync-offline-service\src\main\java\com\dukaanpe\syncoffline\service\InMemorySyncService.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-sync-offline-service\src\main\java\com\dukaanpe\syncoffline\service\SyncService.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-sync-offline-service\src\main\java\com\dukaanpe\syncoffline\SyncOfflineServiceApplication.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-sync-offline-service\src\main\java\com\dukaanpe\syncoffline\dto\ApiResponse.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-sync-offline-service\src\main\java\com\dukaanpe\syncoffline\dto\SyncEventResponse.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-sync-offline-service\src\main\java\com\dukaanpe\syncoffline\dto\SyncPushRequest.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-sync-offline-service\src\main\java\com\dukaanpe\syncoffline\exception\GlobalExceptionHandler.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-sync-offline-service\src\main\java\com\dukaanpe\syncoffline\controller\SyncController.java
+C:\Users\mayas\Downloads\demoSpring\dukaanpe-platform\dukaanpe-sync-offline-service\src\main\java\com\dukaanpe\syncoffline\entity\SyncEventEntity.java
